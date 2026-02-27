@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import Dashboard from '@/pages/Dashboard';
 import OpcuaConfig from '@/pages/OpcuaConfig';
+import MqttConfig from '@/pages/MqttConfig';
+import ActivityMonitor from '@/pages/ActivityMonitor';
 
 export default function App() {
   return (
@@ -16,8 +18,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/opcua" element={<OpcuaConfig />} />
-          <Route path="/mqtt" element={<div className="p-6">MQTT Config — coming next</div>} />
-          <Route path="/activity" element={<div className="p-6">Activity Monitor — coming next</div>} />
+          <Route path="/mqtt" element={<MqttConfig />} />
+          <Route path="/activity" element={<ActivityMonitor />} />
         </Routes>
       </div>
     </BrowserRouter>
