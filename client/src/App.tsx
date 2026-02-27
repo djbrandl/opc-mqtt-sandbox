@@ -1,8 +1,5 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-
-function Dashboard() {
-  return <div className="p-6"><h1 className="text-2xl font-bold">Dashboard</h1></div>;
-}
+import Dashboard from '@/pages/Dashboard';
 
 export default function App() {
   return (
@@ -17,9 +14,9 @@ export default function App() {
         </nav>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/opcua" element={<div className="p-6">OPC UA Config</div>} />
-          <Route path="/mqtt" element={<div className="p-6">MQTT Config</div>} />
-          <Route path="/activity" element={<div className="p-6">Activity Monitor</div>} />
+          <Route path="/opcua" element={<div className="p-6">OPC UA Config — coming next</div>} />
+          <Route path="/mqtt" element={<div className="p-6">MQTT Config — coming next</div>} />
+          <Route path="/activity" element={<div className="p-6">Activity Monitor — coming next</div>} />
         </Routes>
       </div>
     </BrowserRouter>
