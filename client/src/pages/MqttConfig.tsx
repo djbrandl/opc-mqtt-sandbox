@@ -30,6 +30,8 @@ export default function MqttConfig() {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MqttMessage[]>([]);
   const [manualTopic, setManualTopic] = useState('');
+  const [manualValue, setManualValue] = useState('');
+  const [publishMode, setPublishMode] = useState<'value' | 'json'>('value');
   const [manualPayload, setManualPayload] = useState('{}');
 
   useWebSocket({
@@ -98,11 +100,21 @@ export default function MqttConfig() {
   };
 
   const handleManualPublish = async () => {
+    const topic = manualTopic || 'test/topic';
     try {
-      const payload = JSON.parse(manualPayload);
-      await api.publishMqtt(manualTopic || 'test/topic', payload);
+      if (publishMode === 'value') {
+        // Auto-detect type: number, boolean, or string
+        let parsed: any = manualValue;
+        if (manualValue === 'true') parsed = true;
+        else if (manualValue === 'false') parsed = false;
+        else if (manualValue !== '' && !isNaN(Number(manualValue))) parsed = Number(manualValue);
+        await api.publishMqttValue(topic, parsed);
+      } else {
+        const payload = JSON.parse(manualPayload);
+        await api.publishMqtt(topic, payload);
+      }
     } catch (err) {
-      console.error('Invalid JSON or publish failed', err);
+      console.error('Publish failed', err);
     }
   };
 
@@ -223,24 +235,54 @@ export default function MqttConfig() {
 
       {/* Manual Publish */}
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="font-semibold mb-3">Manual Publish</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold">Manual Publish</h3>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setPublishMode('value')}
+              className={`px-3 py-1 rounded text-xs ${publishMode === 'value' ? 'bg-purple-600' : 'bg-gray-800 hover:bg-gray-700'}`}
+            >
+              Value
+            </button>
+            <button
+              onClick={() => setPublishMode('json')}
+              className={`px-3 py-1 rounded text-xs ${publishMode === 'json' ? 'bg-purple-600' : 'bg-gray-800 hover:bg-gray-700'}`}
+            >
+              JSON
+            </button>
+          </div>
+        </div>
         <div className="flex gap-2 mb-2">
           <input
             className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono"
             value={manualTopic}
             onChange={(e) => setManualTopic(e.target.value)}
-            placeholder="Topic path..."
+            placeholder="topic/path..."
           />
+          {publishMode === 'value' && (
+            <input
+              className="w-40 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono"
+              value={manualValue}
+              onChange={(e) => setManualValue(e.target.value)}
+              placeholder="42.5"
+              onKeyDown={(e) => e.key === 'Enter' && handleManualPublish()}
+            />
+          )}
           <button onClick={handleManualPublish} className="px-4 py-1 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium">
             Publish
           </button>
         </div>
-        <textarea
-          className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono h-20"
-          value={manualPayload}
-          onChange={(e) => setManualPayload(e.target.value)}
-          placeholder='{"key": "value"}'
-        />
+        {publishMode === 'json' && (
+          <textarea
+            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono h-20"
+            value={manualPayload}
+            onChange={(e) => setManualPayload(e.target.value)}
+            placeholder='{"key": "value"}'
+          />
+        )}
+        {publishMode === 'value' && (
+          <p className="text-xs text-gray-500 mt-1">Enter a number, string, or boolean. Numbers auto-detected.</p>
+        )}
       </div>
 
       {/* Message Log */}

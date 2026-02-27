@@ -168,10 +168,29 @@ export function createApiRouter(ctx: AppContext): Router {
     res.json({ ok: true });
   });
 
+  // Publish with full control: { topic, payload (any), qos }
   router.post('/mqtt/publish', async (req: Request, res: Response) => {
-    const { topic, payload, qos } = req.body;
+    const { topic, payload, value, qos } = req.body;
     try {
-      await ctx.mqtt.publish(topic, payload, qos ?? 0);
+      // Accept either "payload" (object/any) or "value" (simple scalar)
+      const data = payload !== undefined ? payload : value;
+      await ctx.mqtt.publish(topic, data, qos ?? 0);
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Quick publish a raw value to any topic: POST /mqtt/value/my/topic  { "value": 42.5 }
+  // The topic is in the URL path, the value is in the body. Minimal overhead.
+  router.post('/mqtt/value/*', async (req: Request, res: Response) => {
+    const topic = req.params[0]; // everything after /mqtt/value/
+    const { value, qos } = req.body;
+    if (value === undefined) {
+      return res.status(400).json({ error: 'Missing "value" in body' });
+    }
+    try {
+      await ctx.mqtt.publish(topic, value, qos ?? 0);
       res.json({ ok: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message });

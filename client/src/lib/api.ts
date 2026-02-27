@@ -50,6 +50,9 @@ export const api = {
   stopMqtt: () => request<any>('/mqtt/stop', { method: 'POST' }),
   publishMqtt: (topic: string, payload: any, qos?: number) =>
     request<any>('/mqtt/publish', { method: 'POST', body: JSON.stringify({ topic, payload, qos }) }),
+  /** Quick-publish a raw value to a topic (number, string, boolean, or JSON object) */
+  publishMqttValue: (topic: string, value: any, qos?: number) =>
+    request<any>(`/mqtt/value/${topic}`, { method: 'POST', body: JSON.stringify({ value, qos }) }),
   getMqttClients: () => request<any>('/mqtt/clients'),
   startMqttGeneration: (topicId: string, config: any) =>
     request<any>('/mqtt/generate/start', { method: 'POST', body: JSON.stringify({ topicId, config }) }),

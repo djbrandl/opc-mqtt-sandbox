@@ -108,14 +108,21 @@ export class MqttBrokerWrapper extends EventEmitter {
     });
   }
 
-  publish(topic: string, payload: Record<string, unknown>, qos: 0 | 1 | 2 = 0): Promise<void> {
+  /** Publish any value to a topic. Accepts raw values (number, string, boolean) or objects. */
+  publish(topic: string, payload: unknown, qos: 0 | 1 | 2 = 0): Promise<void> {
     if (!this.broker) return Promise.reject(new Error('Broker not running'));
 
     return new Promise((resolve, reject) => {
+      // Raw scalars get sent as their string representation.
+      // Objects/arrays get JSON-encoded.
+      const payloadStr = (typeof payload === 'object' && payload !== null)
+        ? JSON.stringify(payload)
+        : String(payload);
+
       const packet: IPublishPacket = {
         cmd: 'publish',
         topic,
-        payload: Buffer.from(JSON.stringify(payload)),
+        payload: Buffer.from(payloadStr),
         qos,
         retain: false,
         dup: false,
@@ -124,7 +131,7 @@ export class MqttBrokerWrapper extends EventEmitter {
       this.broker!.publish(packet, (err?: Error) => {
         if (err) reject(err);
         else {
-          this.log('publish', `Server -> ${topic}: ${JSON.stringify(payload).substring(0, 200)}`);
+          this.log('publish', `Server -> ${topic}: ${payloadStr.substring(0, 200)}`);
           this.emit('published', { topic, payload });
           resolve();
         }
