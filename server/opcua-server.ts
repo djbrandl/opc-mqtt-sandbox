@@ -1,7 +1,6 @@
 import {
   OPCUAServer,
   AddressSpace,
-  UANamespace,
   UAVariable,
   DataType,
   Variant,
@@ -9,6 +8,7 @@ import {
   AccessLevelFlag,
   coerceNodeId,
 } from 'node-opcua';
+import type { INamespace } from 'node-opcua-address-space-base';
 import { OpcuaNodeConfig, ActivityLogEntry } from './types.js';
 import { EventEmitter } from 'events';
 
@@ -16,7 +16,7 @@ type NodeMap = Map<string, UAVariable>;
 
 export class OpcuaServerWrapper extends EventEmitter {
   private server: OPCUAServer | null = null;
-  private namespace: UANamespace | null = null;
+  private namespace: INamespace | null = null;
   private addressSpace: AddressSpace | null = null;
   private nodeMap: NodeMap = new Map();
   private port: number;

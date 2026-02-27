@@ -93,7 +93,7 @@ export default function OpcuaConfig() {
       <div className="mt-6 bg-gray-900 border border-gray-800 rounded-lg p-4">
         <h3 className="font-semibold mb-3">All Live Values</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {Object.entries(liveValues).map(([id, { value, timestamp }]) => (
+          {Object.entries(liveValues).map(([id, { value, timestamp: _timestamp }]) => (
             <div key={id} className="bg-gray-800 rounded p-2">
               <div className="text-xs text-gray-500 truncate">{id}</div>
               <div className="text-sm font-mono text-green-400">

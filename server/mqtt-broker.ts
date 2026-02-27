@@ -1,12 +1,14 @@
 import Aedes from 'aedes';
-import { createServer, Server } from 'net';
 import type { Client } from 'aedes';
+import { createServer, Server } from 'net';
 import type { IPublishPacket, ISubscription } from 'mqtt-packet';
 import { ActivityLogEntry } from './types.js';
 import { EventEmitter } from 'events';
 
+type AedesInstance = ReturnType<typeof Aedes.createBroker>;
+
 export class MqttBrokerWrapper extends EventEmitter {
-  private broker: InstanceType<typeof Aedes.Server> | null = null;
+  private broker: AedesInstance | null = null;
   private tcpServer: Server | null = null;
   private port: number;
   private _running = false;
@@ -29,7 +31,7 @@ export class MqttBrokerWrapper extends EventEmitter {
     if (this._running) return;
 
     return new Promise((resolve, reject) => {
-      this.broker = new Aedes.Server({
+      this.broker = Aedes.createBroker({
         id: 'opc-mqtt-test-harness',
         concurrency: 100,
         connectTimeout: 30_000,
