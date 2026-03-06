@@ -28,7 +28,8 @@ function buildTree(topics: MqttTopic[]): TopicTreeNode[] {
 	const root: TopicTreeNode[] = [];
 
 	for (const topic of topics) {
-		const segments = topic.topic.split('/');
+		const segments = topic.topic.split('/').filter((s) => s.length > 0);
+		if (segments.length === 0) continue;
 		let currentChildren = root;
 		let currentPath = '';
 
@@ -56,8 +57,8 @@ function buildTree(topics: MqttTopic[]): TopicTreeNode[] {
 
 	const sortNodes = (nodes: TopicTreeNode[]): TopicTreeNode[] => {
 		return nodes.sort((a, b) => {
-			const aIsFolder = a.topicId === null;
-			const bIsFolder = b.topicId === null;
+			const aIsFolder = a.children.length > 0;
+			const bIsFolder = b.children.length > 0;
 			if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1;
 			return a.segment.localeCompare(b.segment);
 		}).map((node) => ({
@@ -81,6 +82,7 @@ function InlineAddInput({
 	const [editing, setEditing] = useState(false);
 	const [value, setValue] = useState('');
 	const inputRef = useRef<HTMLInputElement>(null);
+	const submittingRef = useRef(false);
 
 	useEffect(() => {
 		if (editing && inputRef.current) {
@@ -89,16 +91,19 @@ function InlineAddInput({
 	}, [editing]);
 
 	const handleSubmit = () => {
-		const trimmed = value.trim();
+		const trimmed = value.trim().replace(/\//g, '');
 		if (trimmed) {
+			submittingRef.current = true;
 			const fullPath = parentPath ? `${parentPath}/${trimmed}` : trimmed;
 			onAddTopic(fullPath);
 		}
 		setValue('');
 		setEditing(false);
+		submittingRef.current = false;
 	};
 
 	const handleCancel = () => {
+		if (submittingRef.current) return;
 		setValue('');
 		setEditing(false);
 	};
@@ -153,39 +158,39 @@ function TreeNodeItem({
 	onRemoveTopic: (id: string) => void;
 }) {
 	const [expanded, setExpanded] = useState(true);
-	const isFolder = node.topicId === null;
-	const isLeaf = !isFolder;
-	const isSelected = isLeaf && selectedTopicId === node.topicId;
 	const hasChildren = node.children.length > 0;
+	const isSelectable = node.topicId !== null;
+	const isSelected = isSelectable && selectedTopicId === node.topicId;
+	const canExpand = hasChildren;
 
 	return (
 		<div>
 			<div
-				className={`flex items-center gap-1 px-2 py-1 rounded text-sm ${
-					isLeaf ? 'cursor-pointer' : ''
+				className={`group flex items-center gap-1 px-2 py-1 rounded text-sm ${
+					isSelectable ? 'cursor-pointer' : ''
 				} hover:bg-gray-800 ${
 					isSelected ? 'bg-gray-800 text-purple-400' : ''
 				}`}
 				style={{ paddingLeft: `${depth * 16 + 8}px` }}
 				onClick={() => {
-					if (isLeaf && node.topicId) {
+					if (isSelectable && node.topicId) {
 						onSelect(node.topicId);
 					}
 				}}
 			>
-				{isFolder ? (
+				{canExpand ? (
 					<button
 						className="text-gray-500 w-4 text-xs"
 						onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
 					>
-						{hasChildren ? (expanded ? '\u25BC' : '\u25B6') : ' '}
+						{expanded ? '\u25BC' : '\u25B6'}
 					</button>
 				) : (
 					<span className="w-4" />
 				)}
-				<span>{isFolder ? '\uD83D\uDCC1' : '\uD83D\uDCE8'}</span>
+				<span>{hasChildren ? '\uD83D\uDCC1' : '\uD83D\uDCE8'}</span>
 				<span className="flex-1">{node.segment}</span>
-				{isLeaf && node.topicId && (
+				{isSelectable && node.topicId && (
 					<button
 						className="text-xs text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 ml-1"
 						onClick={(e) => {
@@ -198,7 +203,7 @@ function TreeNodeItem({
 					</button>
 				)}
 			</div>
-			{isFolder && expanded && (
+			{canExpand && expanded && (
 				<>
 					{node.children.map((child) => (
 						<TreeNodeItem

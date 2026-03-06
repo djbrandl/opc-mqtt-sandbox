@@ -119,18 +119,40 @@ export default function MqttConfig() {
     }
   };
 
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
   const handleSave = async () => {
-    const config = await api.getConfig();
-    config.mqtt.topics = topics;
-    await api.updateConfig(config);
+    setSaveStatus('saving');
+    try {
+      const config = await api.getConfig();
+      config.mqtt.topics = topics;
+      await api.updateConfig(config);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Save failed', err);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
   };
 
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">MQTT Configuration</h1>
-        <button onClick={handleSave} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium">
-          Save Config
+        <button
+          onClick={handleSave}
+          disabled={saveStatus === 'saving'}
+          className={`px-4 py-2 rounded text-sm font-medium ${
+            saveStatus === 'saved' ? 'bg-green-600' :
+            saveStatus === 'error' ? 'bg-red-600' :
+            'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {saveStatus === 'saving' ? 'Saving...' :
+           saveStatus === 'saved' ? 'Saved!' :
+           saveStatus === 'error' ? 'Save Failed' :
+           'Save Config'}
         </button>
       </div>
 
