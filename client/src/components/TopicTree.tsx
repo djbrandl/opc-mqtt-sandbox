@@ -70,13 +70,32 @@ function buildTree(topics: MqttTopic[]): TopicTreeNode[] {
 	return sortNodes(root);
 }
 
+// Renders the tree guide lines (│, ├──, └──) for a given depth
+function TreeGuides({ guides, isLast }: { guides: boolean[]; isLast: boolean }) {
+	return (
+		<span className="inline-flex font-mono text-gray-600 select-none" style={{ fontSize: '13px' }}>
+			{guides.map((hasSibling, i) => (
+				<span key={i} className="inline-block w-4 text-center">
+					{hasSibling ? '\u2502' : ' '}
+				</span>
+			))}
+			<span className="inline-block w-4 text-center">
+				{isLast ? '\u2514' : '\u251C'}
+			</span>
+			<span className="inline-block w-2 text-center">{'\u2500'}</span>
+		</span>
+	);
+}
+
 function InlineAddInput({
 	parentPath,
 	depth,
+	guides,
 	onAddTopic,
 }: {
 	parentPath: string;
 	depth: number;
+	guides: boolean[];
 	onAddTopic: (fullPath: string) => void;
 }) {
 	const [editing, setEditing] = useState(false);
@@ -108,23 +127,25 @@ function InlineAddInput({
 		setEditing(false);
 	};
 
+	const parentLabel = parentPath ? parentPath.split('/').pop() : 'root';
+
 	if (!editing) {
 		return (
 			<div
-				className="flex items-center gap-1 px-2 py-1 cursor-pointer text-gray-600 hover:text-gray-400 text-xs"
-				style={{ paddingLeft: `${depth * 16 + 8 + 20}px` }}
+				className="flex items-center px-2 py-0.5 cursor-pointer text-gray-600 hover:text-gray-400 text-xs"
 				onClick={() => setEditing(true)}
 			>
-				<span className="border border-dashed border-gray-700 rounded px-1">+ add</span>
+				{depth > 0 && <TreeGuides guides={guides} isLast={true} />}
+				<span className="border border-dashed border-gray-700 rounded px-1.5 py-0.5 ml-1">
+					+ add under {parentLabel}
+				</span>
 			</div>
 		);
 	}
 
 	return (
-		<div
-			className="flex items-center gap-1 px-2 py-1 text-xs"
-			style={{ paddingLeft: `${depth * 16 + 8 + 20}px` }}
-		>
+		<div className="flex items-center gap-1 px-2 py-0.5 text-xs">
+			{depth > 0 && <TreeGuides guides={guides} isLast={true} />}
 			<input
 				ref={inputRef}
 				type="text"
@@ -135,8 +156,8 @@ function InlineAddInput({
 					if (e.key === 'Escape') handleCancel();
 				}}
 				onBlur={handleCancel}
-				className="bg-gray-800 border border-gray-700 rounded px-2 py-0.5 text-sm text-gray-200 outline-none focus:border-purple-500 w-48"
-				placeholder="topic-segment"
+				className="bg-gray-800 border border-gray-700 rounded px-2 py-0.5 text-sm text-gray-200 outline-none focus:border-purple-500 w-48 ml-1"
+				placeholder={`name under ${parentLabel}`}
 			/>
 		</div>
 	);
@@ -145,6 +166,8 @@ function InlineAddInput({
 function TreeNodeItem({
 	node,
 	depth,
+	guides,
+	isLast,
 	selectedTopicId,
 	onSelect,
 	onAddTopic,
@@ -152,6 +175,8 @@ function TreeNodeItem({
 }: {
 	node: TopicTreeNode;
 	depth: number;
+	guides: boolean[];  // for each ancestor depth, whether that ancestor has more siblings below
+	isLast: boolean;
 	selectedTopicId: string | null;
 	onSelect: (id: string) => void;
 	onAddTopic: (parentPath: string) => void;
@@ -163,33 +188,41 @@ function TreeNodeItem({
 	const isSelected = isSelectable && selectedTopicId === node.topicId;
 	const canExpand = hasChildren;
 
+	// Guides for this node's children: current guides + whether this node has more siblings
+	const childGuides = depth > 0
+		? [...guides, !isLast]
+		: (isLast ? [] : [true]);
+
+	// Total items under this node (children + the "+ add" row)
+	const totalChildItems = node.children.length + 1; // +1 for the InlineAddInput
+
 	return (
 		<div>
 			<div
-				className={`group flex items-center gap-1 px-2 py-1 rounded text-sm ${
+				className={`group flex items-center px-2 py-1 rounded text-sm ${
 					isSelectable ? 'cursor-pointer' : ''
 				} hover:bg-gray-800 ${
 					isSelected ? 'bg-gray-800 text-purple-400' : ''
 				}`}
-				style={{ paddingLeft: `${depth * 16 + 8}px` }}
 				onClick={() => {
 					if (isSelectable && node.topicId) {
 						onSelect(node.topicId);
 					}
 				}}
 			>
+				{depth > 0 && <TreeGuides guides={guides} isLast={isLast} />}
 				{canExpand ? (
 					<button
-						className="text-gray-500 w-4 text-xs"
+						className="text-gray-500 w-4 text-xs ml-1"
 						onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
 					>
 						{expanded ? '\u25BC' : '\u25B6'}
 					</button>
 				) : (
-					<span className="w-4" />
+					<span className="w-4 ml-1" />
 				)}
-				<span>{hasChildren ? '\uD83D\uDCC1' : '\uD83D\uDCE8'}</span>
-				<span className="flex-1">{node.segment}</span>
+				<span className="ml-0.5">{hasChildren ? '\uD83D\uDCC1' : '\uD83D\uDCE8'}</span>
+				<span className="flex-1 ml-1">{node.segment}</span>
 				{isSelectable && node.topicId && (
 					<button
 						className="text-xs text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 ml-1"
@@ -205,11 +238,13 @@ function TreeNodeItem({
 			</div>
 			{canExpand && expanded && (
 				<>
-					{node.children.map((child) => (
+					{node.children.map((child, i) => (
 						<TreeNodeItem
 							key={child.path}
 							node={child}
 							depth={depth + 1}
+							guides={childGuides}
+							isLast={i === node.children.length - 1 && totalChildItems === node.children.length}
 							selectedTopicId={selectedTopicId}
 							onSelect={onSelect}
 							onAddTopic={onAddTopic}
@@ -219,6 +254,7 @@ function TreeNodeItem({
 					<InlineAddInput
 						parentPath={node.path}
 						depth={depth + 1}
+						guides={childGuides}
 						onAddTopic={onAddTopic}
 					/>
 				</>
@@ -233,6 +269,9 @@ export default function TopicTree({ topics, selectedTopicId, onSelect, onAddTopi
 	const selectedTopic = selectedTopicId
 		? topics.find((t) => t.id === selectedTopicId)
 		: null;
+
+	// +1 for the root-level InlineAddInput
+	const totalRootItems = tree.length + 1;
 
 	return (
 		<div className="bg-gray-900 border border-gray-800 rounded-lg">
@@ -258,11 +297,13 @@ export default function TopicTree({ topics, selectedTopicId, onSelect, onAddTopi
 				{tree.length === 0 && topics.length === 0 ? (
 					<p className="text-gray-500 text-sm p-4">No topics. Use + add to create one.</p>
 				) : (
-					tree.map((node) => (
+					tree.map((node, i) => (
 						<TreeNodeItem
 							key={node.path}
 							node={node}
 							depth={0}
+							guides={[]}
+							isLast={i === tree.length - 1 && totalRootItems === tree.length}
 							selectedTopicId={selectedTopicId}
 							onSelect={onSelect}
 							onAddTopic={onAddTopic}
@@ -273,6 +314,7 @@ export default function TopicTree({ topics, selectedTopicId, onSelect, onAddTopi
 				<InlineAddInput
 					parentPath=""
 					depth={0}
+					guides={[]}
 					onAddTopic={onAddTopic}
 				/>
 			</div>
