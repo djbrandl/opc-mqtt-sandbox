@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { v4 as uuidv4 } from 'uuid';
+import TopicTree from '@/components/TopicTree';
 
 interface MqttField {
   key: string;
@@ -51,10 +52,10 @@ export default function MqttConfig() {
 
   const selectedTopic = topics.find((t) => t.id === selectedTopicId) ?? null;
 
-  const handleAddTopic = () => {
+  const handleAddTopic = (parentPath: string) => {
     const newTopic: MqttTopic = {
       id: 'topic-' + uuidv4().substring(0, 8),
-      topic: 'spc/new/topic',
+      topic: parentPath,
       payloadSchema: [
         { key: 'value', type: 'number' },
         { key: 'timestamp', type: 'timestamp' },
@@ -134,33 +135,14 @@ export default function MqttConfig() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Topic List */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg">
-          <div className="flex items-center justify-between border-b border-gray-800 px-3 py-2">
-            <h3 className="text-sm font-semibold">Topics</h3>
-            <button onClick={handleAddTopic} className="text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded">+ Topic</button>
-          </div>
-          <div className="py-1">
-            {topics.map((t) => (
-              <div
-                key={t.id}
-                className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-800 text-sm ${
-                  selectedTopicId === t.id ? 'bg-gray-800 text-purple-400' : ''
-                }`}
-                onClick={() => setSelectedTopicId(t.id)}
-              >
-                <span className="font-mono truncate">{t.topic}</span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleRemoveTopic(t.id); }}
-                  className="text-red-400 hover:text-red-300 text-xs ml-2"
-                >
-                  x
-                </button>
-              </div>
-            ))}
-            {topics.length === 0 && <p className="text-gray-500 text-sm p-3">No topics. Add one.</p>}
-          </div>
-        </div>
+        {/* Topic Tree */}
+        <TopicTree
+          topics={topics}
+          selectedTopicId={selectedTopicId}
+          onSelect={setSelectedTopicId}
+          onAddTopic={handleAddTopic}
+          onRemoveTopic={handleRemoveTopic}
+        />
 
         {/* Topic Properties + Payload Schema */}
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
@@ -168,14 +150,6 @@ export default function MqttConfig() {
           {selectedTopic && (
             <>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="col-span-2">
-                  <label className="text-gray-500 block">Topic Path</label>
-                  <input
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 font-mono"
-                    value={selectedTopic.topic}
-                    onChange={(e) => handleUpdateTopic({ ...selectedTopic, topic: e.target.value })}
-                  />
-                </div>
                 <div>
                   <label className="text-gray-500 block">QoS</label>
                   <select
