@@ -79,8 +79,8 @@ export default function OpcuaConfig() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">OPC UA Configuration</h1>
-        <button onClick={handleSave} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium">
+        <h1 className="text-2xl font-bold text-slate-100">OPC UA Configuration</h1>
+        <button onClick={handleSave} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm font-medium text-white transition-colors duration-150">
           Save Config
         </button>
       </div>
@@ -90,19 +90,19 @@ export default function OpcuaConfig() {
         <NodeProperties node={selectedNode} liveValue={selectedId ? liveValues[selectedId] : undefined} onUpdate={handleUpdateNode} />
       </div>
 
-      <div className="mt-6 bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="font-semibold mb-3">All Live Values</h3>
+      <div className="mt-6 bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <h3 className="font-semibold text-slate-200 mb-3">All Live Values</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
           {Object.entries(liveValues).map(([id, { value, timestamp: _timestamp }]) => (
-            <div key={id} className="bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-500 truncate">{id}</div>
-              <div className="text-sm font-mono text-green-400">
+            <div key={id} className="bg-slate-800 rounded p-2">
+              <div className="text-xs text-slate-500 truncate">{id}</div>
+              <div className="text-sm font-mono text-emerald-400">
                 {typeof value === 'number' ? value.toFixed(4) : String(value ?? 'N/A')}
               </div>
             </div>
           ))}
           {Object.keys(liveValues).length === 0 && (
-            <p className="text-gray-500 text-sm col-span-full">Start the OPC UA server to see live values.</p>
+            <p className="text-slate-500 text-sm col-span-full">Start the OPC UA server to see live values.</p>
           )}
         </div>
       </div>

@@ -104,7 +104,6 @@ export default function MqttConfig() {
     const topic = manualTopic || 'test/topic';
     try {
       if (publishMode === 'value') {
-        // Auto-detect type: number, boolean, or string
         let parsed: any = manualValue;
         if (manualValue === 'true') parsed = true;
         else if (manualValue === 'false') parsed = false;
@@ -139,15 +138,15 @@ export default function MqttConfig() {
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">MQTT Configuration</h1>
+        <h1 className="text-2xl font-bold text-slate-100">MQTT Configuration</h1>
         <button
           onClick={handleSave}
           disabled={saveStatus === 'saving'}
-          className={`px-4 py-2 rounded text-sm font-medium ${
-            saveStatus === 'saved' ? 'bg-green-600' :
-            saveStatus === 'error' ? 'bg-red-600' :
-            'bg-blue-600 hover:bg-blue-700'
-          }`}
+          className={`px-4 py-2 rounded text-sm font-medium transition-colors duration-150 ${
+            saveStatus === 'saved' ? 'bg-emerald-600 text-white' :
+            saveStatus === 'error' ? 'bg-red-600 text-white' :
+            'bg-blue-600 hover:bg-blue-500 text-white'
+          } disabled:opacity-50`}
         >
           {saveStatus === 'saving' ? 'Saving...' :
            saveStatus === 'saved' ? 'Saved!' :
@@ -167,15 +166,15 @@ export default function MqttConfig() {
         />
 
         {/* Topic Properties + Payload Schema */}
-        <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
-          {!selectedTopic && <p className="text-gray-500 text-sm">Select a topic to configure.</p>}
+        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-4">
+          {!selectedTopic && <p className="text-slate-500 text-sm">Select a topic to configure.</p>}
           {selectedTopic && (
             <>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <label className="text-gray-500 block">QoS</label>
+                  <label className="text-slate-400 block mb-1">QoS</label>
                   <select
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                     value={selectedTopic.qos}
                     onChange={(e) => handleUpdateTopic({ ...selectedTopic, qos: Number(e.target.value) as 0 | 1 | 2 })}
                   >
@@ -185,10 +184,10 @@ export default function MqttConfig() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-gray-500 block">Publish Rate (ms)</label>
+                  <label className="text-slate-400 block mb-1">Publish Rate (ms)</label>
                   <input
                     type="number"
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                     value={selectedTopic.publishRateMs ?? 1000}
                     onChange={(e) => handleUpdateTopic({ ...selectedTopic, publishRateMs: Number(e.target.value) })}
                   />
@@ -197,20 +196,25 @@ export default function MqttConfig() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-semibold">Payload Schema</h4>
-                  <button onClick={handleAddField} className="text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded">+ Field</button>
+                  <h4 className="text-sm font-semibold text-slate-200">Payload Schema</h4>
+                  <button
+                    onClick={handleAddField}
+                    className="text-xs px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 transition-colors duration-150"
+                  >
+                    + Field
+                  </button>
                 </div>
                 <div className="space-y-2">
                   {selectedTopic.payloadSchema.map((field, i) => (
                     <div key={i} className="flex gap-2 items-center text-sm">
                       <input
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 font-mono"
+                        className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 font-mono text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                         value={field.key}
                         placeholder="key"
                         onChange={(e) => handleUpdateField(i, { ...field, key: e.target.value })}
                       />
                       <select
-                        className="bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                        className="bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                         value={field.type}
                         onChange={(e) => handleUpdateField(i, { ...field, type: e.target.value as MqttField['type'] })}
                       >
@@ -219,7 +223,12 @@ export default function MqttConfig() {
                         <option value="boolean">boolean</option>
                         <option value="timestamp">timestamp</option>
                       </select>
-                      <button onClick={() => handleRemoveField(i)} className="text-red-400 hover:text-red-300 text-xs">x</button>
+                      <button
+                        onClick={() => handleRemoveField(i)}
+                        className="text-red-400 hover:text-red-300 text-xs transition-colors duration-150 px-1"
+                      >
+                        ✕
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -230,19 +239,23 @@ export default function MqttConfig() {
       </div>
 
       {/* Manual Publish */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Manual Publish</h3>
+          <h3 className="font-semibold text-slate-200">Manual Publish</h3>
           <div className="flex gap-1">
             <button
               onClick={() => setPublishMode('value')}
-              className={`px-3 py-1 rounded text-xs ${publishMode === 'value' ? 'bg-purple-600' : 'bg-gray-800 hover:bg-gray-700'}`}
+              className={`px-3 py-1 rounded text-xs transition-colors duration-150 ${
+                publishMode === 'value' ? 'bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+              }`}
             >
               Value
             </button>
             <button
               onClick={() => setPublishMode('json')}
-              className={`px-3 py-1 rounded text-xs ${publishMode === 'json' ? 'bg-purple-600' : 'bg-gray-800 hover:bg-gray-700'}`}
+              className={`px-3 py-1 rounded text-xs transition-colors duration-150 ${
+                publishMode === 'json' ? 'bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+              }`}
             >
               JSON
             </button>
@@ -250,47 +263,50 @@ export default function MqttConfig() {
         </div>
         <div className="flex gap-2 mb-2">
           <input
-            className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono"
+            className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm font-mono text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
             value={manualTopic}
             onChange={(e) => setManualTopic(e.target.value)}
             placeholder="topic/path..."
           />
           {publishMode === 'value' && (
             <input
-              className="w-40 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono"
+              className="w-40 bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm font-mono text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
               value={manualValue}
               onChange={(e) => setManualValue(e.target.value)}
               placeholder="42.5"
               onKeyDown={(e) => e.key === 'Enter' && handleManualPublish()}
             />
           )}
-          <button onClick={handleManualPublish} className="px-4 py-1 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium">
+          <button
+            onClick={handleManualPublish}
+            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-sm font-medium text-white transition-colors duration-150"
+          >
             Publish
           </button>
         </div>
         {publishMode === 'json' && (
           <textarea
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono h-20"
+            className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-sm font-mono h-20 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
             value={manualPayload}
             onChange={(e) => setManualPayload(e.target.value)}
             placeholder='{"key": "value"}'
           />
         )}
         {publishMode === 'value' && (
-          <p className="text-xs text-gray-500 mt-1">Enter a number, string, or boolean. Numbers auto-detected.</p>
+          <p className="text-xs text-slate-500 mt-1">Enter a number, string, or boolean. Numbers auto-detected.</p>
         )}
       </div>
 
       {/* Message Log */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="font-semibold mb-3">Message Log</h3>
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <h3 className="font-semibold text-slate-200 mb-3">Message Log</h3>
         <div className="space-y-1 max-h-64 overflow-y-auto font-mono text-xs">
-          {messages.length === 0 && <p className="text-gray-500">No messages yet.</p>}
+          {messages.length === 0 && <p className="text-slate-500">No messages yet.</p>}
           {messages.map((msg, i) => (
-            <div key={i} className="flex gap-2 text-gray-300">
-              <span className="text-gray-600 whitespace-nowrap">{new Date(msg.timestamp).toLocaleTimeString()}</span>
-              <span className="text-purple-400">{msg.topic}</span>
-              <span className="truncate">{JSON.stringify(msg.payload)}</span>
+            <div key={i} className="flex gap-2 text-slate-300">
+              <span className="text-slate-600 whitespace-nowrap">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+              <span className="text-blue-400">{msg.topic}</span>
+              <span className="truncate text-slate-400">{JSON.stringify(msg.payload)}</span>
             </div>
           ))}
         </div>

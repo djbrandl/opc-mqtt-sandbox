@@ -70,10 +70,9 @@ function buildTree(topics: MqttTopic[]): TopicTreeNode[] {
 	return sortNodes(root);
 }
 
-// Renders the tree guide lines (│, ├──, └──) for a given depth
 function TreeGuides({ guides, isLast }: { guides: boolean[]; isLast: boolean }) {
 	return (
-		<span className="inline-flex font-mono text-gray-600 select-none" style={{ fontSize: '13px' }}>
+		<span className="inline-flex font-mono text-slate-600 select-none" style={{ fontSize: '13px' }}>
 			{guides.map((hasSibling, i) => (
 				<span key={i} className="inline-block w-4 text-center">
 					{hasSibling ? '\u2502' : ' '}
@@ -132,11 +131,11 @@ function InlineAddInput({
 	if (!editing) {
 		return (
 			<div
-				className="flex items-center px-2 py-0.5 cursor-pointer text-gray-600 hover:text-gray-400 text-xs"
+				className="flex items-center px-2 py-0.5 cursor-pointer text-slate-600 hover:text-slate-400 text-xs transition-colors duration-150"
 				onClick={() => setEditing(true)}
 			>
 				{depth > 0 && <TreeGuides guides={guides} isLast={true} />}
-				<span className="border border-dashed border-gray-700 rounded px-1.5 py-0.5 ml-1">
+				<span className="border border-dashed border-slate-700 rounded px-1.5 py-0.5 ml-1">
 					+ add under {parentLabel}
 				</span>
 			</div>
@@ -156,10 +155,25 @@ function InlineAddInput({
 					if (e.key === 'Escape') handleCancel();
 				}}
 				onBlur={handleCancel}
-				className="bg-gray-800 border border-gray-700 rounded px-2 py-0.5 text-sm text-gray-200 outline-none focus:border-purple-500 w-48 ml-1"
+				className="bg-slate-800 border border-slate-700 rounded px-2 py-0.5 text-sm text-slate-200 outline-none focus:border-blue-500 w-48 ml-1 transition-colors duration-150"
 				placeholder={`name under ${parentLabel}`}
 			/>
 		</div>
+	);
+}
+
+function NodeIcon({ isFolder }: { isFolder: boolean }) {
+	if (isFolder) {
+		return (
+			<span className="inline-flex items-center justify-center w-4 h-4 rounded text-[10px] bg-amber-500/20 text-amber-400 ml-0.5 flex-shrink-0">
+				D
+			</span>
+		);
+	}
+	return (
+		<span className="inline-flex items-center justify-center w-4 h-4 rounded text-[10px] bg-purple-500/20 text-purple-400 ml-0.5 flex-shrink-0">
+			T
+		</span>
 	);
 }
 
@@ -175,7 +189,7 @@ function TreeNodeItem({
 }: {
 	node: TopicTreeNode;
 	depth: number;
-	guides: boolean[];  // for each ancestor depth, whether that ancestor has more siblings below
+	guides: boolean[];
 	isLast: boolean;
 	selectedTopicId: string | null;
 	onSelect: (id: string) => void;
@@ -188,21 +202,19 @@ function TreeNodeItem({
 	const isSelected = isSelectable && selectedTopicId === node.topicId;
 	const canExpand = hasChildren;
 
-	// Guides for this node's children: current guides + whether this node has more siblings
 	const childGuides = depth > 0
 		? [...guides, !isLast]
 		: (isLast ? [] : [true]);
 
-	// Total items under this node (children + the "+ add" row)
-	const totalChildItems = node.children.length + 1; // +1 for the InlineAddInput
+	const totalChildItems = node.children.length + 1;
 
 	return (
 		<div>
 			<div
-				className={`group flex items-center px-2 py-1 rounded text-sm ${
+				className={`group flex items-center px-2 py-1 rounded text-sm transition-colors duration-150 ${
 					isSelectable ? 'cursor-pointer' : ''
-				} hover:bg-gray-800 ${
-					isSelected ? 'bg-gray-800 text-purple-400' : ''
+				} hover:bg-slate-800 ${
+					isSelected ? 'bg-slate-800 text-blue-400' : ''
 				}`}
 				onClick={() => {
 					if (isSelectable && node.topicId) {
@@ -213,7 +225,7 @@ function TreeNodeItem({
 				{depth > 0 && <TreeGuides guides={guides} isLast={isLast} />}
 				{canExpand ? (
 					<button
-						className="text-gray-500 w-4 text-xs ml-1"
+						className="text-slate-500 w-4 text-xs ml-1 hover:text-slate-300 transition-colors duration-150"
 						onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
 					>
 						{expanded ? '\u25BC' : '\u25B6'}
@@ -221,11 +233,11 @@ function TreeNodeItem({
 				) : (
 					<span className="w-4 ml-1" />
 				)}
-				<span className="ml-0.5">{hasChildren ? '\uD83D\uDCC1' : '\uD83D\uDCE8'}</span>
-				<span className="flex-1 ml-1">{node.segment}</span>
+				<NodeIcon isFolder={hasChildren} />
+				<span className="flex-1 ml-1.5">{node.segment}</span>
 				{isSelectable && node.topicId && (
 					<button
-						className="text-xs text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 ml-1"
+						className="text-xs text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 ml-1 transition-all duration-150"
 						onClick={(e) => {
 							e.stopPropagation();
 							onRemoveTopic(node.topicId!);
@@ -270,32 +282,31 @@ export default function TopicTree({ topics, selectedTopicId, onSelect, onAddTopi
 		? topics.find((t) => t.id === selectedTopicId)
 		: null;
 
-	// +1 for the root-level InlineAddInput
 	const totalRootItems = tree.length + 1;
 
 	return (
-		<div className="bg-gray-900 border border-gray-800 rounded-lg">
-			<div className="flex items-center justify-between border-b border-gray-800 px-3 py-2">
-				<h3 className="text-sm font-semibold">Topic Tree</h3>
+		<div className="bg-slate-900 border border-slate-800 rounded-lg">
+			<div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
+				<h3 className="text-sm font-semibold text-slate-200">Topic Tree</h3>
 				{selectedTopicId && (
 					<button
 						onClick={() => onRemoveTopic(selectedTopicId)}
-						className="text-xs px-2 py-1 bg-red-900 hover:bg-red-800 rounded text-red-300"
+						className="text-xs px-2 py-1 bg-red-500/10 hover:bg-red-500/20 rounded text-red-400 transition-colors duration-150"
 					>
 						Remove
 					</button>
 				)}
 			</div>
-			<div className="border-b border-gray-800 px-3 py-2">
+			<div className="border-b border-slate-800 px-3 py-2">
 				{selectedTopic ? (
-					<code className="text-sm font-mono text-green-400">{selectedTopic.topic}</code>
+					<code className="text-sm font-mono text-emerald-400">{selectedTopic.topic}</code>
 				) : (
-					<span className="text-sm text-gray-500">No topic selected</span>
+					<span className="text-sm text-slate-500">No topic selected</span>
 				)}
 			</div>
 			<div className="py-1 max-h-[500px] overflow-y-auto">
 				{tree.length === 0 && topics.length === 0 ? (
-					<p className="text-gray-500 text-sm p-4">No topics. Use + add to create one.</p>
+					<p className="text-slate-500 text-sm p-4">No topics. Use + add to create one.</p>
 				) : (
 					tree.map((node, i) => (
 						<TreeNodeItem

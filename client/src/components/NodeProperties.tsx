@@ -29,8 +29,8 @@ export default function NodeProperties({ node, liveValue, onUpdate }: NodeProper
 
   if (!node) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <p className="text-gray-500 text-sm">Select a node to view its properties.</p>
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <p className="text-slate-500 text-sm">Select a node to view its properties.</p>
       </div>
     );
   }
@@ -68,25 +68,25 @@ export default function NodeProperties({ node, liveValue, onUpdate }: NodeProper
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
-      <h3 className="font-semibold">Node Properties</h3>
+    <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-4">
+      <h3 className="font-semibold text-slate-200">Node Properties</h3>
 
       <div className="grid grid-cols-2 gap-2 text-sm">
-        <span className="text-gray-500">ID:</span>
-        <span className="font-mono text-xs">{node.id}</span>
-        <span className="text-gray-500">Name:</span>
+        <span className="text-slate-500">ID:</span>
+        <span className="font-mono text-xs text-slate-300">{node.id}</span>
+        <span className="text-slate-500">Name:</span>
         <input
-          className="bg-gray-800 border border-gray-700 rounded px-2 py-1"
+          className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
           value={node.name}
           onChange={(e) => onUpdate({ ...node, name: e.target.value })}
         />
-        <span className="text-gray-500">Type:</span>
-        <span>{node.type}</span>
+        <span className="text-slate-500">Type:</span>
+        <span className="text-slate-300">{node.type}</span>
         {isVariable && (
           <>
-            <span className="text-gray-500">Data Type:</span>
+            <span className="text-slate-500">Data Type:</span>
             <select
-              className="bg-gray-800 border border-gray-700 rounded px-2 py-1"
+              className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
               value={node.dataType ?? 'Double'}
               onChange={(e) => onUpdate({ ...node, dataType: e.target.value })}
             >
@@ -100,27 +100,27 @@ export default function NodeProperties({ node, liveValue, onUpdate }: NodeProper
       </div>
 
       {isVariable && liveValue && (
-        <div className="bg-gray-800 rounded p-2">
-          <div className="text-xs text-gray-500">Live Value</div>
-          <div className="text-lg font-mono text-green-400">
+        <div className="bg-slate-800 rounded p-2">
+          <div className="text-xs text-slate-500">Live Value</div>
+          <div className="text-lg font-mono text-emerald-400">
             {typeof liveValue.value === 'number' ? liveValue.value.toFixed(4) : String(liveValue.value ?? 'N/A')}
           </div>
-          <div className="text-xs text-gray-600">{liveValue.timestamp}</div>
+          <div className="text-xs text-slate-600">{liveValue.timestamp}</div>
         </div>
       )}
 
       {isVariable && (
         <div>
-          <label className="text-sm text-gray-500 block mb-1">Manual Value</label>
+          <label className="text-sm text-slate-500 block mb-1">Manual Value</label>
           <div className="flex gap-2">
             <input
-              className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm"
+              className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
               value={manualValue}
               onChange={(e) => setManualValue(e.target.value)}
               placeholder="Enter value..."
               onKeyDown={(e) => e.key === 'Enter' && handleManualWrite()}
             />
-            <button onClick={handleManualWrite} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">
+            <button onClick={handleManualWrite} className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm text-white transition-colors duration-150">
               Write
             </button>
           </div>
@@ -128,13 +128,13 @@ export default function NodeProperties({ node, liveValue, onUpdate }: NodeProper
       )}
 
       {isVariable && (
-        <div className="border-t border-gray-800 pt-3">
-          <h4 className="text-sm font-semibold mb-2">Auto Generation</h4>
+        <div className="border-t border-slate-800 pt-3">
+          <h4 className="text-sm font-semibold text-slate-200 mb-2">Auto Generation</h4>
           <div className="space-y-2 text-sm">
             <div>
-              <label className="text-gray-500 block">Mode</label>
+              <label className="text-slate-500 block">Mode</label>
               <select
-                className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                 value={node.generation?.mode ?? 'normal'}
                 onChange={(e) => updateGen({ mode: e.target.value })}
               >
@@ -147,36 +147,36 @@ export default function NodeProperties({ node, liveValue, onUpdate }: NodeProper
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-gray-500 block">Nominal</label>
-                <input type="number" className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                <label className="text-slate-500 block">Nominal</label>
+                <input type="number" className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                   value={node.generation?.nominal ?? 0} onChange={(e) => updateGen({ nominal: Number(e.target.value) })} />
               </div>
               <div>
-                <label className="text-gray-500 block">Std Dev</label>
-                <input type="number" className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                <label className="text-slate-500 block">Std Dev</label>
+                <input type="number" className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                   value={node.generation?.stdDev ?? 1} onChange={(e) => updateGen({ stdDev: Number(e.target.value) })} />
               </div>
               <div>
-                <label className="text-gray-500 block">Min</label>
-                <input type="number" className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                <label className="text-slate-500 block">Min</label>
+                <input type="number" className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                   value={node.generation?.min ?? 0} onChange={(e) => updateGen({ min: Number(e.target.value) })} />
               </div>
               <div>
-                <label className="text-gray-500 block">Max</label>
-                <input type="number" className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+                <label className="text-slate-500 block">Max</label>
+                <input type="number" className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                   value={node.generation?.max ?? 100} onChange={(e) => updateGen({ max: Number(e.target.value) })} />
               </div>
             </div>
             <div>
-              <label className="text-gray-500 block">Rate (ms)</label>
-              <input type="number" className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1"
+              <label className="text-slate-500 block">Rate (ms)</label>
+              <input type="number" className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-slate-200 transition-colors duration-150 focus:border-blue-500 outline-none"
                 value={node.generation?.rateMs ?? 1000} onChange={(e) => updateGen({ rateMs: Number(e.target.value) })} />
             </div>
             <div className="flex gap-2">
               <button onClick={handleStartGen} disabled={genRunning}
-                className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm disabled:opacity-50">Start</button>
+                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 rounded text-sm text-white disabled:opacity-50 transition-colors duration-150">Start</button>
               <button onClick={handleStopGen} disabled={!genRunning}
-                className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm disabled:opacity-50">Stop</button>
+                className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 rounded text-sm text-red-400 disabled:opacity-50 transition-colors duration-150">Stop</button>
             </div>
           </div>
         </div>

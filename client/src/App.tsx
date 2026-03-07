@@ -7,13 +7,13 @@ import ActivityMonitor from '@/pages/ActivityMonitor';
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-950 text-gray-100">
-        <nav className="border-b border-gray-800 px-6 py-3 flex items-center gap-6">
-          <span className="font-bold text-lg mr-4">OPC/MQTT Harness</span>
-          <NavLink to="/" end className={({ isActive }) => isActive ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'}>Dashboard</NavLink>
-          <NavLink to="/opcua" className={({ isActive }) => isActive ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'}>OPC UA</NavLink>
-          <NavLink to="/mqtt" className={({ isActive }) => isActive ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'}>MQTT</NavLink>
-          <NavLink to="/activity" className={({ isActive }) => isActive ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'}>Activity</NavLink>
+      <div className="min-h-screen bg-slate-950 text-slate-100">
+        <nav className="border-b border-slate-800 px-6 py-3 flex items-center gap-6">
+          <span className="font-bold text-lg mr-4 text-slate-100">OPC/MQTT Harness</span>
+          <NavLink to="/" end className={({ isActive }) => `transition-colors duration-150 ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}>Dashboard</NavLink>
+          <NavLink to="/opcua" className={({ isActive }) => `transition-colors duration-150 ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}>OPC UA</NavLink>
+          <NavLink to="/mqtt" className={({ isActive }) => `transition-colors duration-150 ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}>MQTT</NavLink>
+          <NavLink to="/activity" className={({ isActive }) => `transition-colors duration-150 ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}>Activity</NavLink>
         </nav>
         <Routes>
           <Route path="/" element={<Dashboard />} />
