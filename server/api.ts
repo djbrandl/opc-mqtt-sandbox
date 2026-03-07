@@ -135,10 +135,22 @@ export function createApiRouter(ctx: AppContext): Router {
   });
 
   // --- OPC UA Generation ---
-  router.post('/opcua/generate/start', (req: Request, res: Response) => {
+  router.post('/opcua/generate/start', async (req: Request, res: Response) => {
     const { nodeId, config } = req.body;
-    ctx.opcuaGenerator.start(nodeId, config);
-    res.json({ ok: true });
+    if (!nodeId || !config) {
+      res.status(400).json({ error: 'nodeId and config are required' });
+      return;
+    }
+    try {
+      if (!ctx.opcua.running) {
+        if (!ctx.currentConfig) ctx.currentConfig = ctx.configStore.getDefaultConfig();
+        await ctx.opcua.start(ctx.currentConfig.opcua.nodes);
+      }
+      ctx.opcuaGenerator.start(nodeId, config);
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   router.post('/opcua/generate/stop', (req: Request, res: Response) => {
@@ -202,10 +214,21 @@ export function createApiRouter(ctx: AppContext): Router {
   });
 
   // --- MQTT Generation ---
-  router.post('/mqtt/generate/start', (req: Request, res: Response) => {
+  router.post('/mqtt/generate/start', async (req: Request, res: Response) => {
     const { topicId, config } = req.body;
-    ctx.mqttGenerator.start(topicId, config);
-    res.json({ ok: true });
+    if (!topicId || !config) {
+      res.status(400).json({ error: 'topicId and config are required' });
+      return;
+    }
+    try {
+      if (!ctx.mqtt.running) {
+        await ctx.mqtt.start();
+      }
+      ctx.mqttGenerator.start(topicId, config);
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   router.post('/mqtt/generate/stop', (req: Request, res: Response) => {

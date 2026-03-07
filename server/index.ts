@@ -13,7 +13,7 @@ import { ActivityLogEntry } from './types.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = parseInt(process.env.PORT ?? '3000', 10);
+const PORT = parseInt(process.env.API_PORT ?? process.env.PORT ?? '3005', 10);
 const isProd = process.env.NODE_ENV === 'production';
 
 // --- Initialize components ---
@@ -42,10 +42,19 @@ ctx.mqttGenerator = new DataGenerator((topicId, value) => {
   if (!config) return;
 
   const topicConfig = config.mqtt.topics.find((t) => t.id === topicId);
-  if (!topicConfig) return;
+  const topic = topicConfig?.topic ?? topicId;
+  const qos = topicConfig?.qos ?? 0;
+  const schema = topicConfig?.payloadSchema;
 
+  // No schema, or single number-only field → publish raw value
+  if (!schema?.length || (schema.length === 1 && schema[0].type === 'number')) {
+    mqtt.publish(topic, value, qos).catch(console.error);
+    return;
+  }
+
+  // Multi-field schema → build structured payload
   const payload: Record<string, unknown> = {};
-  for (const field of topicConfig.payloadSchema) {
+  for (const field of schema) {
     if (field.type === 'timestamp') {
       payload[field.key] = new Date().toISOString();
     } else if (field.type === 'number') {
@@ -95,7 +104,7 @@ if (isProd) {
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   if (!isProd) {
-    console.log('Dev mode: open http://localhost:5173');
+    console.log('Dev mode: open http://localhost:9433');
   }
 });
 

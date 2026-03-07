@@ -4,3 +4,4 @@ dist/
 *.local
 configs/*.json
 !configs/.gitkeep
+.gitnexus
