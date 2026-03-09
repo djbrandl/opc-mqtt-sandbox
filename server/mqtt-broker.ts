@@ -13,6 +13,9 @@ export class MqttBrokerWrapper extends EventEmitter {
   private port: number;
   private _running = false;
   private clientSubscriptions = new Map<string, Set<string>>();
+  private _authEnabled = false;
+  private _username = '';
+  private _password = '';
 
   get running(): boolean {
     return this._running;
@@ -22,20 +25,51 @@ export class MqttBrokerWrapper extends EventEmitter {
     return this.broker?.connectedClients ?? 0;
   }
 
+  get authEnabled(): boolean {
+    return this._authEnabled;
+  }
+
   constructor(port = 1883) {
     super();
     this.port = port;
+  }
+
+  configure(options: { port?: number; auth?: { username: string; password: string } | null }): void {
+    if (options.port) this.port = options.port;
+    if (options.auth) {
+      this._authEnabled = true;
+      this._username = options.auth.username;
+      this._password = options.auth.password;
+    } else {
+      this._authEnabled = false;
+      this._username = '';
+      this._password = '';
+    }
   }
 
   async start(): Promise<void> {
     if (this._running) return;
 
     return new Promise((resolve, reject) => {
-      this.broker = Aedes.createBroker({
-        id: 'opc-mqtt-test-harness',
+      const brokerOpts: any = {
+        id: 'opc-mqtt-sandbox',
         concurrency: 100,
         connectTimeout: 30_000,
-      });
+      };
+
+      if (this._authEnabled) {
+        brokerOpts.authenticate = (
+          _client: Client,
+          username: Readonly<string> | undefined,
+          password: Readonly<Buffer> | undefined,
+          callback: (error: Error | null, success: boolean | null) => void
+        ) => {
+          const valid = username === this._username && password?.toString() === this._password;
+          callback(null, valid);
+        };
+      }
+
+      this.broker = Aedes.createBroker(brokerOpts);
 
       this.setupEventHandlers();
 
