@@ -9,7 +9,7 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-slate-950 text-slate-100">
         <nav className="border-b border-slate-800 px-6 py-3 flex items-center gap-6">
-          <span className="font-bold text-lg mr-4 text-slate-100">OPC/MQTT Harness</span>
+          <span className="font-bold text-lg mr-4 text-slate-100">OPC/MQTT Sandbox</span>
           <NavLink to="/" end className={({ isActive }) => `transition-colors duration-150 ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}>Dashboard</NavLink>
           <NavLink to="/opcua" className={({ isActive }) => `transition-colors duration-150 ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}>OPC UA</NavLink>
           <NavLink to="/mqtt" className={({ isActive }) => `transition-colors duration-150 ${isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}>MQTT</NavLink>

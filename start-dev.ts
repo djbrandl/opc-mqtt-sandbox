@@ -26,7 +26,7 @@ async function main() {
 	const apiPort = await findFreePort(PREFERRED_PORT);
 
 	console.log('============================================');
-	console.log('  OPC UA / MQTT Test Harness');
+	console.log('  OPC/MQTT Sandbox');
 	console.log('============================================');
 	console.log();
 	console.log(`  Express API:    http://localhost:${apiPort}`);

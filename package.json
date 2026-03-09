@@ -1,5 +1,5 @@
 {
-  "name": "opc-mqtt-server",
+  "name": "opc-mqtt-sandbox",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
