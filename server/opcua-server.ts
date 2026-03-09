@@ -35,7 +35,8 @@ export class OpcuaServerWrapper extends EventEmitter {
   }
 
   get securityPolicy(): string {
-    return SecurityPolicy[this._securityPolicy];
+    const entry = Object.entries(SecurityPolicy).find(([, v]) => v === this._securityPolicy);
+    return entry?.[0] ?? 'None';
   }
 
   constructor(port = 4840) {
