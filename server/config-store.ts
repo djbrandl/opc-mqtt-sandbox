@@ -46,6 +46,8 @@ export class ConfigStore {
       name: 'default',
       opcua: {
         port: 4840,
+        securityMode: 'None' as const,
+        securityPolicy: 'None' as const,
         nodes: [
           {
             id: 'SPC',
@@ -79,6 +81,7 @@ export class ConfigStore {
       },
       mqtt: {
         port: 1883,
+        auth: null,
         topics: [
           {
             id: 'topic-1',
