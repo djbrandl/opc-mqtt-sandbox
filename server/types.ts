@@ -39,10 +39,13 @@ export interface ProjectConfig {
   opcua: {
     port: number;
     nodes: OpcuaNodeConfig[];
+    securityMode: 'None' | 'Sign' | 'SignAndEncrypt';
+    securityPolicy: 'None' | 'Basic256Sha256';
   };
   mqtt: {
     port: number;
     topics: MqttTopicConfig[];
+    auth?: { username: string; password: string } | null;
   };
   metadata: {
     partIdPattern: string;
@@ -53,8 +56,19 @@ export interface ProjectConfig {
 }
 
 export interface ServerStatus {
-  opcua: { running: boolean; port: number; connectedClients: number };
-  mqtt: { running: boolean; port: number; connectedClients: number };
+  opcua: {
+    running: boolean;
+    port: number;
+    connectedClients: number;
+    securityMode: string;
+    securityPolicy: string;
+  };
+  mqtt: {
+    running: boolean;
+    port: number;
+    connectedClients: number;
+    authEnabled: boolean;
+  };
 }
 
 export interface ActivityLogEntry {
