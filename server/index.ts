@@ -64,7 +64,7 @@ ctx.mqttGenerator = new DataGenerator((topicId, value) => {
     }
   }
 
-  mqtt.publish(topicConfig.topic, payload, topicConfig.qos).catch(console.error);
+  mqtt.publish(topic, payload, qos).catch(console.error);
 });
 
 // --- Wire activity logs to WebSocket ---
