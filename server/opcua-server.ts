@@ -7,6 +7,8 @@ import {
   StatusCodes,
   AccessLevelFlag,
   coerceNodeId,
+  MessageSecurityMode,
+  SecurityPolicy,
 } from 'node-opcua';
 import type { INamespace } from 'node-opcua-address-space-base';
 import { OpcuaNodeConfig, ActivityLogEntry } from './types.js';
@@ -21,9 +23,19 @@ export class OpcuaServerWrapper extends EventEmitter {
   private nodeMap: NodeMap = new Map();
   private port: number;
   private _running = false;
+  private _securityMode: MessageSecurityMode = MessageSecurityMode.None;
+  private _securityPolicy: SecurityPolicy = SecurityPolicy.None;
 
   get running(): boolean {
     return this._running;
+  }
+
+  get securityMode(): string {
+    return MessageSecurityMode[this._securityMode];
+  }
+
+  get securityPolicy(): string {
+    return SecurityPolicy[this._securityPolicy];
   }
 
   constructor(port = 4840) {
@@ -31,14 +43,26 @@ export class OpcuaServerWrapper extends EventEmitter {
     this.port = port;
   }
 
+  configure(options: { port?: number; securityMode?: string; securityPolicy?: string }): void {
+    if (options.port) this.port = options.port;
+    if (options.securityMode) {
+      this._securityMode = MessageSecurityMode[options.securityMode as keyof typeof MessageSecurityMode] ?? MessageSecurityMode.None;
+    }
+    if (options.securityPolicy) {
+      this._securityPolicy = SecurityPolicy[options.securityPolicy as keyof typeof SecurityPolicy] ?? SecurityPolicy.None;
+    }
+  }
+
   async start(nodes: OpcuaNodeConfig[]): Promise<void> {
     if (this._running) return;
 
     this.server = new OPCUAServer({
       port: this.port,
-      resourcePath: '/UA/TestHarness',
+      resourcePath: '/UA/Sandbox',
+      securityModes: [this._securityMode],
+      securityPolicies: [this._securityPolicy],
       buildInfo: {
-        productName: 'OPC-MQTT Test Harness',
+        productName: 'OPC/MQTT Sandbox',
         buildNumber: '1.0.0',
         buildDate: new Date(),
       },
@@ -187,6 +211,11 @@ export class OpcuaServerWrapper extends EventEmitter {
 
   getNodeIds(): string[] {
     return Array.from(this.nodeMap.keys());
+  }
+
+  getConnectedSessionCount(): number {
+    if (!this.server) return 0;
+    return this.server.currentSessionCount ?? 0;
   }
 
   private log(type: ActivityLogEntry['type'], detail: string): void {
