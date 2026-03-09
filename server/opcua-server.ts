@@ -71,7 +71,7 @@ export class OpcuaServerWrapper extends EventEmitter {
 
     await this.server.initialize();
     this.addressSpace = this.server.engine.addressSpace!;
-    this.namespace = this.addressSpace.registerNamespace('urn:opc-mqtt-test-harness');
+    this.namespace = this.addressSpace.registerNamespace('urn:opc-mqtt-sandbox');
 
     this.buildNodes(nodes, this.addressSpace.rootFolder.objects);
 

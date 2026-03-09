@@ -1,7 +1,7 @@
 @echo off
-title OPC UA / MQTT Test Harness
+title OPC UA / MQTT Sandbox
 echo ============================================
-echo   OPC UA / MQTT Test Harness
+echo   OPC UA / MQTT Sandbox
 echo ============================================
 echo.
 
