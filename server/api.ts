@@ -25,11 +25,15 @@ export function createApiRouter(ctx: AppContext): Router {
       opcua: {
         running: ctx.opcua.running,
         port: ctx.currentConfig?.opcua.port ?? 4840,
+        connectedClients: ctx.opcua.getConnectedSessionCount(),
+        securityMode: ctx.currentConfig?.opcua.securityMode ?? 'None',
+        securityPolicy: ctx.currentConfig?.opcua.securityPolicy ?? 'None',
       },
       mqtt: {
         running: ctx.mqtt.running,
         port: ctx.currentConfig?.mqtt.port ?? 1883,
         connectedClients: ctx.mqtt.connectedClients,
+        authEnabled: ctx.mqtt.authEnabled,
       },
       project: ctx.currentConfig?.name ?? null,
     });
@@ -100,10 +104,15 @@ export function createApiRouter(ctx: AppContext): Router {
       if (!ctx.currentConfig) {
         ctx.currentConfig = ctx.configStore.getDefaultConfig();
       }
+      ctx.opcua.configure({
+        port: ctx.currentConfig.opcua.port,
+        securityMode: ctx.currentConfig.opcua.securityMode,
+        securityPolicy: ctx.currentConfig.opcua.securityPolicy,
+      });
       await ctx.opcua.start(ctx.currentConfig.opcua.nodes);
       res.json({ ok: true });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Failed to start OPC UA server' });
     }
   });
 
@@ -167,10 +176,17 @@ export function createApiRouter(ctx: AppContext): Router {
   // --- MQTT Control ---
   router.post('/mqtt/start', async (_req: Request, res: Response) => {
     try {
+      if (!ctx.currentConfig) {
+        ctx.currentConfig = ctx.configStore.getDefaultConfig();
+      }
+      ctx.mqtt.configure({
+        port: ctx.currentConfig.mqtt.port,
+        auth: ctx.currentConfig.mqtt.auth,
+      });
       await ctx.mqtt.start();
       res.json({ ok: true });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Failed to start MQTT broker' });
     }
   });
 
